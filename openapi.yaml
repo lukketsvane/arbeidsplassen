@@ -1,0 +1,48 @@
+openapi: 3.0.0 
+info: 
+  title: Arbeidsplassen Jobs Feed API 
+  version: 1.0.0 
+servers: 
+  - url: https://arbeidsplassen.iverfinne.no 
+paths: 
+  /api/jobs: 
+    get: 
+      summary: Fetch job listings from NAV's stilling-feed API. 
+      parameters: 
+        - in: query 
+          name: municipal 
+          schema: 
+            type: string 
+          description: Municipality filter (e.g., OSLO) 
+      responses: 
+        '200': 
+          description: Successful response with job listings. 
+          content: 
+            application/json: 
+              schema: 
+                type: object 
+                properties: 
+                  version: 
+                    type: string 
+                  title: 
+                    type: string 
+                  home_page_url: 
+                    type: string 
+                  feed_url: 
+                    type: string 
+                  description: 
+                    type: string 
+                  next_url: 
+                    type: string 
+                  id: 
+                    type: string 
+                  next_id: 
+                    type: string 
+                  items: 
+                    type: array 
+                    items: 
+                      type: object 
+        '400': 
+          description: Bad request. 
+        '500': 
+          description: Server error. 
