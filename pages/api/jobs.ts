@@ -1,18 +1,26 @@
-// pages/api/jobs.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-const AUTH_TOKEN =
-  "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJwdWJsaWMudG9rZW4udjJAbmF2Lm5vIiwiYXVkIjoiZmVlZC1hcGktdjEiLCJpc3MiOiJuYXYubm8iLCJleHAiOjE3NDYwNTA0MDAsImlhdCI6MTczMjExMjk2OX0.WHEC0oGgzZQjut1n2ZQK2xtW2gPhUCaBzTup2aqF2Wk";
+// Replace with the new token generated using your email.
+const AUTH_TOKEN = "NEW_VALID_TOKEN_VALUE";
 const API_URL = "https://arbeidsplassen.nav.no/public-feed/api/v1/ads";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  // Construct URL with query parameters
+  // Construct the URL using query parameters
   const url = new URL(API_URL);
-  Object.entries(req.query).forEach(([key, value]) => {
-    if (typeof value === "string") {
-      url.searchParams.append(key, value);
-    }
-  });
+  if (req.query && typeof req.query === 'object') {
+    Object.entries(req.query).forEach(([key, value]) => {
+      if (typeof value === 'string') {
+        url.searchParams.append(key, value);
+      } else if (Array.isArray(value)) {
+        url.searchParams.append(key, value.join(','));
+      }
+    });
+  }
+  if (!req.query.size) {
+    url.searchParams.append("size", "10");
+  }
+
+  console.log("Fetching URL:", url.toString());
 
   try {
     const response = await fetch(url.toString(), {
@@ -23,7 +31,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
     if (!response.ok) {
       const errorDetails = await response.text();
-      console.error("Error", response.status, errorDetails);
+      console.error("Error fetching data:", response.status, errorDetails);
       return res.status(response.status).json({
         message: "Error fetching data",
         details: errorDetails,
@@ -34,8 +42,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   } catch (error: unknown) {
     if (error instanceof Error) {
       return res.status(500).json({ message: "Server error", error: error.message });
-    } else {
-      return res.status(500).json({ message: "Server error" });
     }
+    return res.status(500).json({ message: "Server error" });
   }
 }
